@@ -87,7 +87,7 @@ def get_ai_response(messages: List[Dict[str, str]]) -> str:
         )
         if not response:
             return "No response from OpenAI API"
-        print(response.choices[0].message.content)
+        # print(response.choices[0].message.content)
         return response.choices[0].message.content
 
     except Exception as e:
