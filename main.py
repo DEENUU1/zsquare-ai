@@ -29,6 +29,9 @@ if 'full_name' not in st.session_state:
 if 'selected_client' not in st.session_state:
     st.session_state.selected_client = None
 
+if 'messages' not in st.session_state:
+    st.session_state['messages'] = []
+
 
 @st.experimental_dialog("Formularz")
 def form(data: FormOutputSchema):
@@ -64,28 +67,33 @@ with st.sidebar:
             selected_client = client
             st.session_state.selected_client = selected_client
             st.session_state.selected_form = None
+            st.session_state['messages'] = []
 
 if st.session_state.selected_client:
-    if "client_modal" not in st.session_state:
-        if st.button("Klient"):
-            client(selected_client)
-
     st.title(st.session_state.selected_client.full_name)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if "client_modal" not in st.session_state:
+            if st.button("Klient"):
+                client(st.session_state.selected_client)
 
     forms = get_forms_by_client(db, st.session_state.selected_client.id)
     form_options = [f"{form.id} - {str(form.created_at)[:10]}" for form in forms]
     selected_option = st.selectbox("Wybierz formularz:", form_options)
     if selected_option:
         selected_form = next(form for form in forms if f"{form.id} - {str(form.created_at)[:10]}" == selected_option)
-        if selected_option:
+        if selected_form != st.session_state.selected_form:
             st.session_state.selected_form = selected_form
+            st.session_state['messages'] = []
+
+        with col2:
+            if "form_modal" not in st.session_state:
+                if st.button("Formularz"):
+                    form(st.session_state.selected_form)
 
 if st.session_state.selected_form:
-    if "form_modal" not in st.session_state:
-        if st.button("Formularz"):
-            form(selected_form)
-
-    if "messages" not in st.session_state:
+    if not st.session_state['messages']:
         initial_messages = get_messages_by_form_id(db, st.session_state.selected_form.id)
         st.session_state["messages"] = [{"role": msg.role, "content": msg.text} for msg in initial_messages]
 

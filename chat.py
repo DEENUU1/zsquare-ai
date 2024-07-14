@@ -23,56 +23,37 @@ def get_ai_response(messages: List[Dict[str, str]]) -> str:
     so you need to pay attention to what you are asking about
     
     ## Data to collect
-    ### Antropometria
+    1. Antropometria
     - wysokość ciała
     - rękojeść mostka/długość tułowia
     - długość wewnętrzna nogi
     - szerokość ramion
     - zasięg ramion
     - adnotacje dotyczące antropometrii
-    ### Obecne problemy z pozycja na rowerze - HERE YOU NEED TO GENERALLY ASK ABOUT PROBLEMS AND "Fitter" will describe it
-    - stopy
-    - kolana
-    - biodra
-    - odcinek lędźwiowy
-    - odcinek szyjny/kark
-    - drętwienie nadgarsków
-    - łokcie
-    - siodło
-    - kierownica 
-    - adnotacje dotyczące problemów z pozycją - ASK "Fitter" IF THERE ARE ANY OTHER PROBLEMS 
-    ### Profil otropedyczny/zdrowotny - HERE ASK ABOUT ANY MEDICAL CONDITIONS
-    
-    ## PRZYKŁAD 1
-    - AI: Proszę podać wzrost klienta.
-    - Fitter: Wzrost to 175 cm.
-    - AI: Teraz proszę podać długość od uchwytu do mostka/długość tułowia.
-    - Fitter: Długość tułowia to 60 cm.
-    - AI: Czy możesz podać długość wewnętrzną nogi?
-    - Fitter: Długość wewnętrzna nogi to 80 cm.
-    - AI: Jaka jest szerokość ramion?
-    - Fitter: Szerokość ramion to 40 cm.
-    - AI: Czy możesz podać zasięg ramion?
-    - Fitter: Zasięg ramion to 70 cm.
-    - AI: Czy masz jakieś adnotacje dotyczące antropometrii klienta?
-    - Fitter: Brak dodatkowych adnotacji.
-    
-    ## PRZYKŁAD 2
-    - AI: Czy są jakieś obecne problemy z pozycją klienta na rowerze?
-    - Fitter: Tak, klient odczuwa ból kolan.
-    - AI: Czy możesz podać szczegóły dotyczące bólu kolan?
-    - Fitter: Klient odczuwa ból w prawym kolanie, szczególnie podczas długich jazd.
-    - AI: Czy są jeszcze jakieś inne problemy z pozycją klienta na rowerze?
-    - Fitter: Nie zgłoszono innych problemów.
-    
-    ## PRZYKŁAD 3
-    - AI: Czy klient ma jakieś stany medyczne lub ortopedyczne?
-    - Fitter: Klient ma historię bólu dolnego odcinka pleców.
-    - AI: Czy są jakieś szczegóły dotyczące bólu dolnego odcinka pleców?
-    - Fitter: Ból występuje okresowo i nasila się przy długotrwałym siedzeniu.
-    - AI: Czy są jeszcze jakieś inne stany medyczne do odnotowania?
-    - Fitter: Brak innych stanów.
-
+    2. Historia sportowana
+    3. Adnotacja dotycząca historii sportowej, zapytaj czy trzeba coś dodać
+    4. Obecne problemy z pozycja na rowerze
+    5. Adnotacja dotycząca problemów z pozycją na rowerze, zapytaj czy trzeba coś dodać
+    6. Profil otropedyczny/zdrowotny - HERE ASK ABOUT ANY MEDICAL CONDITIONS
+    7. Profil motoryczny/ocena fizjoterapeutyczna 
+    8. Adnotacje dotyczące profilu motorycznego/oceny fizjoterapeutycznej
+    9. Wymiary roweru (tutaj zapytaj krok po kroku o każdy wymiar)
+    - Wysokość siodła [Końcowe i opcjonalne]
+    - Model siodła [Końcowe i opcjonalne]
+    - Rozmiar siodła [Końcowe i opcjonalne]
+    - Nachylenie siodła [Końcowe i opcjonalne]
+    - Offset sztycy [Końcowe i opcjonalne]
+    - Odsunięcie siodła od osi suportu [Końcowe i opcjonalne]
+    - Końcówka siodła od środka kierownicy [Końcowe i opcjonalne]
+    - Końcówka siodła do manetki [Końcowe i opcjonalne]
+    - Różnica wysokości (DROP) [Końcowe i opcjonalne]
+    - Mostek długość / kąt [Końcowe i opcjonalne]
+    - Szerokość kierownicy [Końcowe i opcjonalne]
+    - Model kierownicy [Końcowe i opcjonalne]
+    - Wysokość podkładek [Końcowe i opcjonalne]
+    - Długość korby [Końcowe i opcjonalne]
+    - Kąt manetek (kierownica / dźwignia) [Końcowe i opcjonalne]
+    10. Adnotacje dotyczące wymiarów roweru
     """
 
     system_message = {"role": "system", "content": system_prompt}
