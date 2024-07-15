@@ -1,7 +1,7 @@
 import streamlit as st
 import logging
 from transcription import whisper_stt
-from chat import get_ai_response
+from chat import get_chat_response
 from database import get_db
 from repo import get_clients, get_forms_by_client, create_message, get_messages_by_form_id
 from schemas import MessageInputSchema, FormOutputSchema, ClientOutputSchema
@@ -36,16 +36,39 @@ if 'messages' not in st.session_state:
 @st.experimental_dialog("Formularz")
 def form(data: FormOutputSchema):
     st.write("Dane z formularza użytkownika")
-    st.write(f"Rower: {data.bike}")
-    st.write(f"Buty: {data.boots}")
-    st.write(f"Wkładki: {data.insoles}")
-    st.write(f"Pedały: {data.pedals}")
-    st.write(f"Inne rowery: {data.other_bikes}")
-    st.write(f"Annotacja narzędzia: {data.tool_annotation}")
-    st.write(f"Historia sportowa: {data.sport_history}")
-    st.write(f"Annotacja sportu: {data.sport_annotation}")
-    st.write(f"Data utworzenia: {data.created_at}")
-    st.write(f"Data modyfikacji: {data.updated_at}")
+    st.write(f"ID: {data.id}")
+    st.write(f"Bike: {data.bike}")
+    st.write(f"Boots: {data.boots}")
+    st.write(f"Insoles: {data.insoles}")
+    st.write(f"Pedals: {data.pedals}")
+    st.write(f"Other Bikes: {data.other_bikes}")
+    st.write(f"Tool Annotation: {data.tool_annotation}")
+    st.write(f"Sport History: {data.sport_history}")
+    st.write(f"Sport Annotation: {data.sport_annotation}")
+    st.write(f"Position Problem: {data.position_problem}")
+    st.write(f"Adnotation Position Problem: {data.adnotation_position_problem}")
+    st.write(f"Years Cycling: {data.years_cycling}")
+    st.write(f"Annual Mileage: {data.annual_mileage}")
+    st.write(f"Weekly Rides: {data.weekly_rides}")
+    st.write(f"Session Duration: {data.session_duration}")
+    st.write(f"Participated in Races: {data.participated_in_races}")
+    st.write(f"Best Results: {data.best_results}")
+    st.write(f"Intensity Measurement: {data.intensity_measurement}")
+    st.write(f"Other Sports: {data.other_sports}")
+    st.write(f"Bike Confidence: {data.bike_confidence}")
+    st.write(f"Gear Changing: {data.gear_changing}")
+    st.write(f"Autumn Winter Riding: {data.autumn_winter_riding}")
+    st.write(f"Preferred Grip: {data.preferred_grip}")
+    st.write(f"Cadence Comfort: {data.cadence_comfort}")
+    st.write(f"Group Riding Skills: {data.group_riding_skills}")
+    st.write(f"Cornering Style: {data.cornering_style}")
+    st.write(f"Brake Usage: {data.brake_usage}")
+    st.write(f"Tire Pressure Check: {data.tire_pressure_check}")
+    st.write(f"Injuries: {data.injuries}")
+    st.write(f"Injuries During Cycling: {data.injuries_during_cycling}")
+    st.write(f"Client ID: {data.client_id}")
+    st.write(f"Created At: {data.created_at}")
+    st.write(f"Updated At: {data.updated_at}")
 
 
 @st.experimental_dialog("Klient")
@@ -129,7 +152,7 @@ if st.session_state.selected_form:
 
         st.chat_message("user").write(prompt)
 
-        ai_response = get_ai_response(st.session_state["messages"])
+        ai_response = get_chat_response(st.session_state["messages"])
         st.session_state["messages"].append({"role": "assistant", "content": ai_response})
         st.chat_message("assistant").write(ai_response)
 

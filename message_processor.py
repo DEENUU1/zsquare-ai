@@ -9,74 +9,67 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.runnables import chain
 from langchain_openai import ChatOpenAI
-from repo import get_messages_by_form_id
+from repo import get_messages_by_form_id, get_form_by_id
 from database import get_db
 from config import settings
 from schemas import MessageOutputSchema
+from openai import OpenAI
 
 os.environ["OPENAI_API_KEY"] = settings.OPENAI_APIKEY
 
 logger = logging.getLogger(__name__)
 
 
-class Antropometria(BaseModel):
-    wysokosc_ciala: float = Field(..., description="Wysokość ciała w centymetrach")
-    rekojeść_mostka: float = Field(..., description="Długość rękojeści mostka / długość tułowia w centymetrach")
-    dlugosc_wewnetrzna_nogi: float = Field(..., description="Długość wewnętrzna nogi w centymetrach")
-    szerokosc_ramion: float = Field(..., description="Szerokość ramion w centymetrach")
-    zasieg_ramion: float = Field(..., description="Zasięg ramion w centymetrach")
+class Anthropometry(BaseModel):
+    body_height: float = Field(..., description="Wysokość ciała w centymetrach")
+    sternum_handle: float = Field(..., description="Długość rękojeści mostka / długość tułowia w centymetrach")
+    inner_leg_length: float = Field(..., description="Długość wewnętrzna nogi w centymetrach")
+    shoulder_width: float = Field(..., description="Szerokość ramion w centymetrach")
+    arm_span: float = Field(..., description="Zasięg ramion w centymetrach")
 
 
-class WymiaryRoweru(BaseModel):
-    wysokosc_siodla: Optional[float] = Field(None, description="Wysokość siodła w centymetrach")
-    model_siodla: Optional[str] = Field(None, description="Model siodła")
-    rozmiar_siodla: Optional[str] = Field(None, description="Rozmiar siodła")
-    nachylenie_siodla: Optional[float] = Field(None, description="Nachylenie siodła w stopniach")
-    offset_sztycy: Optional[float] = Field(None, description="Offset sztycy w milimetrach")
-    odsuniecie_siodla_od_osi_suportu: Optional[float] = Field(None,
-                                                              description="Odsunięcie siodła od osi suportu w centymetrach")
-    koncowka_siodla_od_srodka_kierownicy: Optional[float] = Field(None,
-                                                                  description="Odległość końcówki siodła od środka kierownicy w centymetrach")
-    koncowka_siodla_do_manetki: Optional[float] = Field(None,
-                                                        description="Odległość końcówki siodła do manetki w centymetrach")
-    roznica_wysokosci: Optional[float] = Field(None, description="Różnica wysokości (DROP) w centymetrach")
-    mostek_dlugosc: Optional[float] = Field(None, description="Długość mostka w milimetrach")
-    mostek_kat: Optional[float] = Field(None, description="Kąt mostka w stopniach")
-    szerokosc_kierownicy: Optional[float] = Field(None, description="Szerokość kierownicy w centymetrach")
-    model_kierownicy: Optional[str] = Field(None, description="Model kierownicy")
-    wysokosc_podkladek: Optional[float] = Field(None, description="Wysokość podkładek w milimetrach")
-    dlugosc_korby: Optional[float] = Field(None, description="Długość korby w milimetrach")
-    kat_manetek: Optional[float] = Field(None, description="Kąt manetek (kierownica / dźwignia) w stopniach")
+class BicycleDimensions(BaseModel):
+    saddle_height: Optional[float] = Field(None, description="Wysokość siodła w centymetrach")
+    saddle_model: Optional[str] = Field(None, description="Model siodła")
+    saddle_size: Optional[str] = Field(None, description="Rozmiar siodła")
+    saddle_tilt: Optional[float] = Field(None, description="Nachylenie siodła w stopniach")
+    seatpost_offset: Optional[float] = Field(None, description="Offset sztycy w milimetrach")
+    saddle_to_bottom_bracket: Optional[float] = Field(
+        None, description="Odsunięcie siodła od osi suportu w centymetrach"
+    )
+    saddle_to_handlebar_center: Optional[float] = Field(
+        None, description="Odległość końcówki siodła od środka kierownicy w centymetrach"
+    )
+    saddle_to_shifter: Optional[float] = Field(
+        None, description="Odległość końcówki siodła do manetki w centymetrach"
+    )
+    height_difference: Optional[float] = Field(None, description="Różnica wysokości (DROP) w centymetrach")
+    stem_length: Optional[float] = Field(None, description="Długość mostka w milimetrach")
+    stem_angle: Optional[float] = Field(None, description="Kąt mostka w stopniach")
+    handlebar_width: Optional[float] = Field(None, description="Szerokość kierownicy w centymetrach")
+    handlebar_model: Optional[str] = Field(None, description="Model kierownicy")
+    spacer_height: Optional[float] = Field(None, description="Wysokość podkładek w milimetrach")
+    crank_length: Optional[float] = Field(None, description="Długość korby w milimetrach")
+    shifter_angle: Optional[float] = Field(None, description="Kąt manetek (kierownica / dźwignia) w stopniach")
 
 
 class ConversationInformation(BaseModel):
-    tag_on: bool = Field(
-        ...,
-        example=True,
-        description="Set to True if image contains tag else return False.",
-    )
-    color: str = Field(
-        ...,
-        example="red",
-        description="The color of the paper in the image. "
-                    "Possible values are: 'red', 'yellow', 'green', or 'none' "
-                    "if no paper is detected.",
-    )
-    antropometria: Antropometria = Field(
+    anthropometry: Anthropometry = Field(
         ...,
         description="Antropometria zawierająca szczegółowe pomiary",
     )
-    adnotacje_antropometria: str = Field(..., description="Adnotacje dotyczące antropometrii")
-    historia_sportowa: str = Field(..., description="Historia sportowa")
-    adnotacje_historia_sportowa: str = Field(..., description="Adnotacja dotycząca historii sportowej")
-    problemy_z_pozycja: str = Field(..., description="Obecne problemy z pozycją na rowerze")
-    adnotacje_problemy_z_pozycja: str = Field(..., description="Adnotacja dotycząca problemów z pozycją na rowerze")
-    profil_ortopedyczny: str = Field(..., description="Profil ortopedyczny/zdrowotny")
-    profil_motoryczny: str = Field(..., description="Profil motoryczny/ocena fizjoterapeutyczna")
-    adnotacje_profil_motoryczny: str = Field(...,
-                                             description="Adnotacje dotyczące profilu motorycznego/oceny fizjoterapeutycznej")
-    wymiary_roweru: WymiaryRoweru = Field(..., description="Szczegółowe wymiary roweru")
-    adnotacje_wymiary_roweru: str = Field(..., description="Adnotacje dotyczące wymiarów roweru")
+    anthropometry_notes: str = Field(..., description="Adnotacje dotyczące antropometrii")
+    sports_history: str = Field(..., description="Historia sportowa")
+    sports_history_notes: str = Field(..., description="Adnotacja dotycząca historii sportowej")
+    position_problems: str = Field(..., description="Obecne problemy z pozycją na rowerze")
+    position_problems_notes: str = Field(..., description="Adnotacja dotycząca problemów z pozycją na rowerze")
+    orthopedic_profile: str = Field(..., description="Profil ortopedyczny/zdrowotny")
+    motor_profile: str = Field(..., description="Profil motoryczny/ocena fizjoterapeutyczna")
+    motor_profile_notes: str = Field(
+        ..., description="Adnotacje dotyczące profilu motorycznego/oceny fizjoterapeutycznej"
+    )
+    bicycle_dimensions: BicycleDimensions = Field(..., description="Szczegółowe wymiary roweru")
+    bicycle_dimensions_notes: str = Field(..., description="Adnotacje dotyczące wymiarów roweru")
 
 
 parser = JsonOutputParser(pydantic_object=ConversationInformation)
@@ -126,7 +119,7 @@ def convert_messages_to_dict(messages: List[MessageOutputSchema]) -> list[dict]:
     return conversation
 
 
-def get_conversation_information(form_id: int) -> Optional[dict]:
+def get_conversation_information(form_data) -> Optional[dict]:
     vision_prompt = """
     Process conversation and return structured output based on the given schema.
     Collect the following data:
@@ -164,9 +157,7 @@ def get_conversation_information(form_id: int) -> Optional[dict]:
     """
     conversation_chain = load_message_chain | conversation_model | parser
 
-    db = next(get_db())
-    messages = get_messages_by_form_id(db, form_id)
-    messages_dict = convert_messages_to_dict(messages)
+    messages_dict = convert_messages_to_dict(form_data)
 
     try:
         return conversation_chain.invoke(
@@ -181,6 +172,99 @@ def get_conversation_information(form_id: int) -> Optional[dict]:
         return None
 
 
+def generate_session_summary(form_data, conversation_structured_output) -> Optional[str]:
+    if not settings.OPENAI_APIKEY:
+        raise ValueError("OPENAI_APIKEY is not set")
+
+    prompt = f"""
+    ### !IMPORTANT!
+    Your answer must be in polish.
+    
+    Based on the provided data from the fitter-chatbot conversation and data from the user form, 
+    create a summary of changes introduced in the bike settings.
+    
+    ### Client data
+    {form_data}
+    
+    ### Conversation data
+    {conversation_structured_output}
+    
+    ### Example 1
+    wobec pozycji wyjściowej siodełko klienta zostało obniżone, bez kompensacyjnej zmiany przesunięcia przód-tył.
+    Kąt pochylenia został zachowany, sam model siodełka Bontrager Verse COMP, w obiektywne cenie na macie 
+    tensometrycznej spełnia swoją rolę i podpiera kości kulszowe w akceptowalnych wartościach sił.
+    Dokonano też próby obiektywnej na siodełku w szerokości 152 mm model PRO Stealth, które wykazywało większą 
+    niestabilność miednicy i zwiększyło wartości sił podporu.
+    Obniżona pozycja na siodełku zapewnia mniejszy roking miednicy, stabilniejszą pozycję w siodle i mniejsze 
+    wartości ciśnienia w podporze.
+    Pozycja mostka i szerokość kierownicy bez zmian.
+    Wobec pozycji wyjściowej podkładki zostały obniżone spod mostka o 20 mm w dół.
+    Powyższe pozwoliło osiągnąć swobodniejszy podpór w obręczy barkowej i dać przestrzeń dość długim kończyną
+    górnym klienta.
+    W trakcie sesji dokonano wyboru nowego obuwia i przejścia z systemu SPD SL na system SPD MTB.
+    Wybrane buty to Lake MX238 w rozmiarze 44,5 regular. Bloki zostały ustawione tożsamo to poprzednich butów. 
+    Zarówno w poprzednich butach jak i nowych wobec pozycji wyjściowej do butów MTB nie zdecydowałem się 
+    dokładać 3 mm dystansu tak jak miało to miejsce wcześniej. Klient został poinformowany o tym fakcie 
+    i postawiona została argumentacja natury fittingowej.
+    Polecam regularne ćwiczenia redukujące ustawienie łokci w delikatnym zgięciu, poprzez zginanie łokcia w dół do 
+    siebie, a następnie stopniowe odkładanie dłoni na manetkę.
+    Na prośbę klienta skontrolowałem również i zarekomendowałem odpowiedni kąt ustawienia przystawki 
+    czasowej.
+    Klient w dwóch parach obuwia z którymi się zgłosił miał wkładki Bontrager w kolorze żółtym, których zasadność 
+    zastosowania wobec budowa anatomicznej stopy potwierdzam.
+    Na ten moment do nowych butów Lake skorzystałem z krócej dociętych wkładek Bontrager. 
+    W przyszłości jeżeli pozostawałaby jakaś pusta przestrzeń w bucie, zapraszam do kontaktu i ewentualnego 
+    wykonania wkładek custom.
+
+    ### Example 2
+    W oparciu o zgłoszony problem napięć i bólu okolic mięśnia triceps i miesienia deltoideus akton boczny i tylny
+    przeprowadziłem szereg prób mających na celu zniesienia nadmiernego napięcia mięśniowego.
+    Finalnie na drodze testowania pozycji zdecydowałem się obniżyć pozycję kierownicy odwracając kąt mostka i
+    obniżając podkładkę w dół o 10 mm wobec pozycji wyjściowej.
+    Test szerszej kierownicy i wyższej pozycji pogarszały wrażenia z napięć wyżej wymienionych okolic.
+    Siodełko przesunięte zostało o 6 mm wstecz celem przeniesienia środka ciężkości do tyłu. 
+    W trakcie sesji zostały też wykonane indywidulane wkładki Foot Ballance 100% Balance do butów marki Shimano.
+
+    ### Example 3
+    Antropometria: wzrost 179 cm, wysokość rękojeści mostka 146 cm, przekork 86,5 cm, szerokość ramion 40 cm, 
+    zasięg kończyn górnych 179 cm 
+    Podsumowanie: 
+    W oparciu o wywiad, ocenę funkcjonalną i antropometryczną przeprowadziłem sesję bikefittigu roweru Kross
+    Esker 6.0 w rozmiarze L. 
+    Wobec pozycji wyjściowej siodełko zostało obniżone o 7 mm, zwiększony został kąt pochylenia do -2 stopni.
+    Pozycja kierownicy w kwestii rotacji bez zmian.
+    Mostek wydłużony został o 1 cm.
+    W trakcie sesji zmienione zostały zużyte pedały i bloki SPD 520, na pedały SPD 540.
+    Dzięki powyższemu mniejszy luz roboczy utrzymuje lewą nogę w osiowości cyklu pedałowania, zimniejsze jest
+    rotacja do wew. podudzia. 
+    Klient ma ćwiczyć i regularnie przechodzić do jazdy w stójce, regularnie zmieniać chwyty, kontrolować łokcie
+    w delikatnym zgięciu. 
+    Niezależnie należałoby wzmocnić treningiem siłowym obręcz barkową i plecy.
+    """
+
+    try:
+        client = OpenAI(api_key=settings.OPENAI_APIKEY)
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        if not response:
+            return None
+        return response.choices[0].message.content
+
+    except Exception as e:
+        logger.error(e)
+        return None
+
+
 if __name__ == "__main__":
-    output = get_conversation_information(1)
-    print(output)
+    db = next(get_db())
+    form_data = get_form_by_id(db, 2)
+
+    structured_output = get_conversation_information(form_data)
+    print(structured_output)
+    summary = generate_session_summary(form_data, structured_output)
+    print(summary)

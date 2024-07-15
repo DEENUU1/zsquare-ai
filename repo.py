@@ -27,6 +27,15 @@ def get_forms_by_client(
     return [FormOutputSchema.from_orm(form) for form in forms]
 
 
+def get_form_by_id(
+        db: Session,
+        form_id: int
+) -> FormOutputSchema:
+    form = db.query(FormData).filter(FormData.id == form_id).first()
+
+    return FormOutputSchema.from_orm(form) if form else None
+
+
 def create_message(
         db: Session,
         message: MessageInputSchema

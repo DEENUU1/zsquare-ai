@@ -5,9 +5,9 @@ from openai import OpenAI
 from config import settings
 
 
-def get_ai_response(messages: List[Dict[str, str]]) -> str:
+def get_chat_response(messages: List[Dict[str, str]]) -> str:
     if not settings.OPENAI_APIKEY:
-        return "No API key found"
+        raise ValueError("OPENAI_APIKEY is not set")
 
     system_prompt = """
     ## Important
@@ -67,8 +67,7 @@ def get_ai_response(messages: List[Dict[str, str]]) -> str:
             messages=messages,
         )
         if not response:
-            return "No response from OpenAI API"
-        # print(response.choices[0].message.content)
+            return "No response from OpenAI API :("
         return response.choices[0].message.content
 
     except Exception as e:
