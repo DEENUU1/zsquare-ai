@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from openai import OpenAI
 
-from config import settings
+from config.settings import settings
 
 
 def get_chat_response(messages: List[Dict[str, str]]) -> str:
@@ -12,16 +12,16 @@ def get_chat_response(messages: List[Dict[str, str]]) -> str:
     system_prompt = """
     ## Important
     !!!You need to answer write in Polish language!!!
-    
+
     you are the assistant of a "fitter" who interviews a customer about a bicycle, 
     the "fitter" must collect the appropriate data. 
     Ask the "fitter" one by one about the appropriate data according to the scenario given below, 
     what data it needs to collect. 
-    
+
     ## Important
     "Fitter" can also provide data in a different order, 
     so you need to pay attention to what you are asking about
-    
+
     ## Data to collect
     1. Antropometria
     - wysokość ciała

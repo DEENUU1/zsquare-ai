@@ -9,10 +9,9 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.runnables import chain
 from langchain_openai import ChatOpenAI
-from repo import get_messages_by_form_id, get_form_by_id
-from database import get_db
-from config import settings
-from schemas import MessageOutputSchema
+from config.settings import settings
+from schemas.message_schema import MessageOutputSchema
+from schemas.form_schema import FormOutputSchema
 from openai import OpenAI
 
 os.environ["OPENAI_API_KEY"] = settings.OPENAI_APIKEY
@@ -119,7 +118,7 @@ def convert_messages_to_dict(messages: List[MessageOutputSchema]) -> list[dict]:
     return conversation
 
 
-def get_conversation_information(form_data) -> Optional[dict]:
+def get_conversation_information(messages: List[MessageOutputSchema]) -> Optional[dict]:
     vision_prompt = """
     Process conversation and return structured output based on the given schema.
     Collect the following data:
@@ -157,7 +156,7 @@ def get_conversation_information(form_data) -> Optional[dict]:
     """
     conversation_chain = load_message_chain | conversation_model | parser
 
-    messages_dict = convert_messages_to_dict(form_data)
+    messages_dict = convert_messages_to_dict(messages)
 
     try:
         return conversation_chain.invoke(
@@ -172,7 +171,7 @@ def get_conversation_information(form_data) -> Optional[dict]:
         return None
 
 
-def generate_session_summary(form_data, conversation_structured_output) -> Optional[str]:
+def generate_session_summary(form_data: FormOutputSchema, conversation_structured_output: Any) -> Optional[str]:
     if not settings.OPENAI_APIKEY:
         raise ValueError("OPENAI_APIKEY is not set")
 
@@ -258,13 +257,3 @@ def generate_session_summary(form_data, conversation_structured_output) -> Optio
     except Exception as e:
         logger.error(e)
         return None
-
-
-if __name__ == "__main__":
-    db = next(get_db())
-    form_data = get_form_by_id(db, 2)
-
-    structured_output = get_conversation_information(form_data)
-    print(structured_output)
-    summary = generate_session_summary(form_data, structured_output)
-    print(summary)

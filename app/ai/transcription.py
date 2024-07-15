@@ -4,7 +4,7 @@ from openai import OpenAI
 import streamlit as st
 from streamlit_mic_recorder import mic_recorder
 import io
-from config import settings
+from config.settings import settings
 import logging
 
 

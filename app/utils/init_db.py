@@ -1,5 +1,7 @@
-from database import Base, engine
-from models import FormData, Client, Message
+from config.database import Base, engine
+from models.form_data import FormData
+from models.client import Client
+from models.message import Message
 
 
 def init_db() -> None:

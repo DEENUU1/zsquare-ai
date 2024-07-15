@@ -1,15 +1,14 @@
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 import io
 from reportlab.pdfbase.ttfonts import TTFont
 from typing import List, Any
-from reportlab.platypus import SimpleDocTemplate, Table, Paragraph, Spacer
-from database import get_db
-from repo import get_form_by_id
-from message_processor import get_conversation_information, generate_session_summary, get_messages_by_form_id
-from schemas import FormOutputSchema
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from config.database import get_db
+from repositories.form_repository import get_form_by_id
+from repositories.message_repository import get_messages_by_form_id
+from schemas.form_schema import FormOutputSchema
 
 
 def add_spaces(elements, height=7):
@@ -41,7 +40,7 @@ def generate_pdf_report(form_data: FormOutputSchema, structured_output: dict, su
     header_style = get_header_style()
 
     buffer = io.BytesIO()
-    pdfmetrics.registerFont(TTFont("Abhaya", "Abhaya.ttf"))
+    pdfmetrics.registerFont(TTFont("Abhaya", "../Abhaya.ttf"))
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     elements = []
 

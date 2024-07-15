@@ -1,21 +1,13 @@
 import streamlit as st
-import logging
-from transcription import whisper_stt
-from chat import get_chat_response
-from database import get_db
-from repo import get_clients, get_forms_by_client, create_message, get_messages_by_form_id
-from schemas import MessageInputSchema, FormOutputSchema, ClientOutputSchema
-from utils import init_db
-
-
-def setup():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-    logger = logging.getLogger(__name__)
-    init_db()
-    return logger, next(get_db())
+from ai.transcription import whisper_stt
+from ai.chat import get_chat_response
+from repositories.client_repository import get_clients
+from repositories.form_repository import get_forms_by_client
+from repositories.message_repository import create_message, get_messages_by_form_id
+from schemas.message_schema import MessageInputSchema
+from schemas.form_schema import FormOutputSchema
+from schemas.client_schema import ClientOutputSchema
+from utils.setup import setup
 
 
 logger, db = setup()
