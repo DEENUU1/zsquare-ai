@@ -16,3 +16,15 @@ def get_clients(
     clients = query.all()
 
     return [ClientOutputSchema.from_orm(client) for client in clients]
+
+
+def get_client_by_id(
+        db: Session,
+        client_id: int
+) -> ClientOutputSchema:
+    client = db.query(Client).filter(Client.id == client_id).first()
+
+    if not client:
+        raise ValueError(f"Client with id {client_id} not found")
+
+    return ClientOutputSchema.from_orm(client)

@@ -5,75 +5,82 @@ import io
 from reportlab.pdfbase.ttfonts import TTFont
 from typing import List, Any
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from config.database import get_db
+from sqlalchemy.orm import Session
+from repositories.client_repository import get_client_by_id
 from repositories.form_repository import get_form_by_id
 from repositories.message_repository import get_messages_by_form_id
 from schemas.form_schema import FormOutputSchema
+from utils.filename_generator import generate_filename
 
 
-def add_spaces(elements, height=7):
-    elements.append(Spacer(1, height))
+class Report:
+    @staticmethod
+    def add_spaces(elements, height=7):
+        elements.append(Spacer(1, height))
+
+    @staticmethod
+    def add_text(elements: List, style, text: str) -> None:
+        elements.append(Paragraph(text, style))
+
+    @staticmethod
+    def get_paragraph_style() -> Any:
+        paragraph_style = ParagraphStyle('services_description')
+        paragraph_style.fontName = 'Abhaya'
+        paragraph_style.fontSize = 8
+        paragraph_style.bold = False
+        return paragraph_style
+
+    @staticmethod
+    def get_header_style() -> Any:
+        header_style = ParagraphStyle('header')
+        header_style.fontName = 'Abhaya'
+        header_style.fontSize = 10
+        header_style.bold = True
+        return header_style
+
+    def generate_pdf_report(
+            self,
+            form_data: FormOutputSchema,
+            structured_output: dict,
+            summary: str,
+    ) -> io.BytesIO:
+        style = self.get_paragraph_style()
+        header_style = self.get_header_style()
+
+        buffer = io.BytesIO()
+        pdfmetrics.registerFont(TTFont("Abhaya", "Abhaya.ttf"))
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+
+        self.add_text(elements, header_style, "Form Data")
+        for field, value in form_data.dict().items():
+            self.add_text(elements, style, f"{field}: {value}")
+            self.add_spaces(elements)
+
+        self.add_spaces(elements, height=14)
+
+        self.add_text(elements, header_style, "Structured Output")
+        for key, value in structured_output.items():
+            self.add_text(elements, style, f"{key}: {value}")
+            self.add_spaces(elements)
+
+        self.add_spaces(elements, height=14)
+
+        self.add_text(elements, header_style, "Summary")
+        self.add_text(elements, style, summary)
+
+        doc.build(elements)
+        buffer.seek(0)
+
+        return buffer
 
 
-def add_text(elements: List, style, text: str) -> None:
-    elements.append(Paragraph(text, style))
+def generate_report(db: Session, form_id: int = 1) -> None:
+    form_data = get_form_by_id(db, form_id)
+    client_data = get_client_by_id(db, form_data.client_id)
+    messages = get_messages_by_form_id(db, form_id)
 
-
-def get_paragraph_style() -> Any:
-    paragraph_style = ParagraphStyle('services_description')
-    paragraph_style.fontName = 'Abhaya'
-    paragraph_style.fontSize = 8
-    paragraph_style.bold = False
-    return paragraph_style
-
-
-def get_header_style() -> Any:
-    header_style = ParagraphStyle('header')
-    header_style.fontName = 'Abhaya'
-    header_style.fontSize = 10
-    header_style.bold = True
-    return header_style
-
-
-def generate_pdf_report(form_data: FormOutputSchema, structured_output: dict, summary: str):
-    style = get_paragraph_style()
-    header_style = get_header_style()
-
-    buffer = io.BytesIO()
-    pdfmetrics.registerFont(TTFont("Abhaya", "../Abhaya.ttf"))
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    elements = []
-
-    # Add form data section
-    add_text(elements, header_style, "Form Data")
-    for field, value in form_data.dict().items():
-        add_text(elements, style, f"{field}: {value}")
-        add_spaces(elements)
-
-    add_spaces(elements, height=14)
-
-    # Add structured output section
-    add_text(elements, header_style, "Structured Output")
-    for key, value in structured_output.items():
-        add_text(elements, style, f"{key}: {value}")
-        add_spaces(elements)
-
-    add_spaces(elements, height=14)
-
-    # Add summary section
-    add_text(elements, header_style, "Summary")
-    add_text(elements, style, summary)
-
-    doc.build(elements)
-    buffer.seek(0)
-
-    return buffer, "report.pdf"
-
-
-if __name__ == "__main__":
-    db = next(get_db())
-    form_data = get_form_by_id(db, 1)
-    messages = get_messages_by_form_id(db, 1)
+    filename = generate_filename(form_data, client_data)
 
     # structured_output = get_conversation_information(messages)
     # print(structured_output)
@@ -129,8 +136,9 @@ if __name__ == "__main__":
         "Dzięki powyższym dostosowaniom, zmniejszono napięcia mięśniowe, poprawiono stabilność i komfort jazdy klienta na rowerze."
     )
 
-    buffer, filename = generate_pdf_report(form_data, structured_output, summary)
+    buffer = Report().generate_pdf_report(form_data, structured_output, summary)
 
-    with open(filename, "wb") as f:
+    with open(f"reports/{filename}", "wb") as f:
         f.write(buffer.getbuffer())
-    print(f"PDF report generated and saved as {filename}")
+
+    return

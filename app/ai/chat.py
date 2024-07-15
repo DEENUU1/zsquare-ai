@@ -1,15 +1,12 @@
 from typing import List, Dict
+from ai.openai import OpenAIClient
+import logging
 
-from openai import OpenAI
-
-from config.settings import settings
+logger = logging.getLogger(__name__)
 
 
-def get_chat_response(messages: List[Dict[str, str]]) -> str:
-    if not settings.OPENAI_APIKEY:
-        raise ValueError("OPENAI_APIKEY is not set")
-
-    system_prompt = """
+def get_system_prompt() -> str:
+    return """
     ## Important
     !!!You need to answer write in Polish language!!!
 
@@ -56,19 +53,14 @@ def get_chat_response(messages: List[Dict[str, str]]) -> str:
     10. Adnotacje dotyczące wymiarów roweru
     """
 
-    system_message = {"role": "system", "content": system_prompt}
 
-    messages = [system_message] + messages
+def get_chat_response(messages: List[Dict[str, str]]) -> str:
+    system_message = {"role": "system", "content": get_system_prompt()}
+    full_messages = [system_message] + messages
 
     try:
-        client = OpenAI(api_key=settings.OPENAI_APIKEY)
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-        )
-        if not response:
-            return "No response from OpenAI API :("
-        return response.choices[0].message.content
-
+        client = OpenAIClient()
+        return client.create_chat_completion(full_messages)
     except Exception as e:
+        logger.error(e)
         return f"Error: {str(e)}"
