@@ -244,7 +244,7 @@ def generate_session_summary(form_data: FormOutputSchema, conversation_structure
     try:
         client = OpenAI(api_key=settings.OPENAI_APIKEY)
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt},

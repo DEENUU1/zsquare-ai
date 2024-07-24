@@ -1,5 +1,5 @@
 from typing import List, Dict
-from ai.openai import OpenAIClient
+from services.openai import OpenAIClient
 import logging
 
 logger = logging.getLogger(__name__)

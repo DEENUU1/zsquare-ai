@@ -37,6 +37,7 @@ class FormData(Base):
     injuries = Column(String, nullable=True)
     injuries_during_cycling = Column(Boolean, nullable=True)
     client_id = Column(Integer, ForeignKey("client.id"), nullable=False)
+    report = relationship("Report", back_populates="form_data", uselist=False)
     message = relationship("Message", backref="form", cascade="all, delete-orphan")
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

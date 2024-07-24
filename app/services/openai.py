@@ -28,3 +28,16 @@ class OpenAIClient:
         except Exception as e:
             logger.error(f"Error in OpenAI API call: {str(e)}")
             raise ValueError(f"Error in OpenAI API call: {str(e)}")
+
+    def convert_text_to_speech(self, input_text: str):
+        try:
+            response = self.client.audio.speech.create(
+                model="tts-1",
+                voice="alloy",
+                input=input_text,
+            )
+            response.stream_to_file("output.mp3")
+
+        except Exception as e:
+            logger.error(f"Error in OpenAI API call: {str(e)}")
+            raise ValueError(f"Error in OpenAI API call: {str(e)}")
