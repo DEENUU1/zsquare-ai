@@ -1,4 +1,6 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+
 from config.database import Base
 
 
@@ -10,3 +12,4 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     is_active = Column(Integer, default=0)
     hashed_password = Column(String)
+    forms = relationship("FormData", back_populates="user")

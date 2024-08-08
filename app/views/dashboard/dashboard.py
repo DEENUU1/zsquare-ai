@@ -1,6 +1,8 @@
 import base64
 import os
 import tempfile
+from datetime import datetime
+
 from fastapi import APIRouter, Request, Depends, Form, HTTPException, UploadFile, File, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 
@@ -11,11 +13,12 @@ from starlette.responses import JSONResponse
 
 from config.database import get_db
 from models.client import Client
+from models.form_data import FormData
 from services.auth import get_current_user
 from config.settings import settings
 from services.chat import Chatbot
 from services.client_service import create_client, get_clients, get_client_by_id, delete_client_by_id, search_clients
-from services.form_data_service import get_forms_by_client_id, delete_form_by_id, get_form_by_id
+from services.form_data_service import get_forms_by_client_id, delete_form_by_id, get_form_by_id, create_form_data
 from services.message_service import get_messages_by_form_id
 from services.report import generate_report
 from services.report_service import get_report_by_form_id
@@ -82,18 +85,29 @@ def create_client_handler(
         full_name: str = Form(...),
         email: str = Form(...),
         phone: str = Form(...),
+        fitter: int = Form(...),
+        visit_date: str = Form(...),
+        client_id: int = Form(None),
         db: Session = Depends(get_db)
 ):
     current_user = get_current_user(request)
     if not current_user:
         return RedirectResponse("/user/login")
 
-    client = create_client(db, Client(
-        full_name=full_name,
-        email=email,
-        phone=phone,
-    ))
-    return RedirectResponse(url=f"/clients/{client.id}", status_code=303)
+    if not client_id:
+        client = create_client(db, Client(
+            full_name=full_name,
+            email=email,
+            phone=phone,
+        ))
+        client_id = client.id
+
+    create_form_data(db, FormData(
+        user_id=fitter,
+        visit_date=datetime.strptime(visit_date, "%Y-%m-%d"),
+    ), client_id)
+
+    return RedirectResponse(url=f"/clients/{client_id}", status_code=303)
 
 
 @router.delete("/clients/{client_id}")

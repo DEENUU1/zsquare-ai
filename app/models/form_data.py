@@ -24,5 +24,8 @@ class FormData(Base):
     client_id = Column(Integer, ForeignKey("client.id"), nullable=False)
     report = relationship("Report", back_populates="form_data", uselist=False)
     message = relationship("Message", backref="form", cascade="all, delete-orphan")
+    visit_date = Column(DateTime, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user = relationship("User", back_populates="forms")
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
