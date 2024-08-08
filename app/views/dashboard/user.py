@@ -33,11 +33,11 @@ async def login(
             {"request": request, "error": "Nieprawidłowe dane logowania"}
         )
 
-    if not user.is_active:
-        return settings.TEMPLATES.TemplateResponse(
-            "login.html",
-            {"request": request, "error": "Użytkownik jest nieaktywny"}
-        )
+    # if not user.is_active:
+    #     return settings.TEMPLATES.TemplateResponse(
+    #         "login.html",
+    #         {"request": request, "error": "Użytkownik jest nieaktywny"}
+    #     )
 
     if not verify_password(password, user.hashed_password):
         return settings.TEMPLATES.TemplateResponse(
