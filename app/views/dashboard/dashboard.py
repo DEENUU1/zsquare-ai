@@ -14,7 +14,8 @@ from starlette.responses import JSONResponse
 from config.database import get_db
 from models.client import Client
 from models.form_data import FormData
-from services.auth import get_current_user
+from models.user import User
+from services.auth import get_current_user, get_password_hash
 from config.settings import settings
 from services.chat import Chatbot
 from services.client_service import create_client, get_clients, get_client_by_id, delete_client_by_id, search_clients
@@ -23,6 +24,8 @@ from services.message_service import get_messages_by_form_id
 from services.report import generate_report
 from services.report_service import get_report_by_form_id
 from services.user_service import get_users, delete_user_by_id, update_is_active_user
+from utils.current_date import get_current_date
+from utils.generate_password import generate_random_password
 from utils.model_serializer import serialize_model
 
 router = APIRouter(
@@ -174,6 +177,29 @@ def get_users_handler(request: Request, db: Session = Depends(get_db)):
             "user": current_user
         }
     )
+
+
+@router.post("/users")
+def create_new_user_handler(
+        request: Request,
+        full_name: str = Form(...),
+        email: str = Form(...),
+        db: Session = Depends(get_db)):
+    current_user = get_current_user(request)
+    if not current_user:
+        return RedirectResponse("/user/login")
+
+    password = generate_random_password(10, use_uppercase=False, use_special_chars=False)
+    hashed_password = get_password_hash(password)
+    new_user = User(email=email, full_name=full_name, hashed_password=hashed_password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {
+        "message": "User created successfully",
+        "password": password
+    }
 
 
 @router.delete("/users/{user_id}")
