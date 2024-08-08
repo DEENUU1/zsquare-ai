@@ -27,6 +27,11 @@ async def login(
         db: Session = Depends(get_db)
 ):
     user = get_user_by_email(db, email)
+    if not user:
+        return settings.TEMPLATES.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Nieprawidłowe dane logowania"}
+        )
 
     if not user.is_active:
         return settings.TEMPLATES.TemplateResponse(
@@ -34,7 +39,7 @@ async def login(
             {"request": request, "error": "Użytkownik jest nieaktywny"}
         )
 
-    if not user or not verify_password(password, user.hashed_password):
+    if not verify_password(password, user.hashed_password):
         return settings.TEMPLATES.TemplateResponse(
             "login.html",
             {"request": request, "error": "Nieprawidłowe dane logowania"}
