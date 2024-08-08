@@ -23,6 +23,7 @@ def submit_form(data: FormInputSchema, db: Session = Depends(get_db)):
 
         client.birth_date = data.birth_date
         client.location = data.location
+        db.commit()
 
         latest_form = db.query(FormData).filter(FormData.client_id == client.id).order_by(
             FormData.created_at.desc()).first()
