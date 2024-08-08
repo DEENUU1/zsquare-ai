@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from fastapi import Request
 from fastapi.security import OAuth2PasswordBearer, HTTPBasic
 from sqlalchemy.orm import Session
-from starlette.responses import RedirectResponse
 
 from models.user import User
 from config.database import get_db
@@ -59,12 +58,3 @@ def get_current_user(request: Request):
         return None
     return user
 
-
-def login_required(func):
-    async def wrapper(request: Request, *args, **kwargs):
-        user = get_current_user(request)
-        if not user:
-            return RedirectResponse(url="/login")
-        return await func(request, *args, **kwargs)
-
-    return wrapper

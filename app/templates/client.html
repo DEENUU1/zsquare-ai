@@ -58,6 +58,12 @@
                     Data utworzenia
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Data wizyty
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Fitter
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Akcje
                 </th>
             </tr>
@@ -68,6 +74,8 @@
                 <td class="px-6 py-4 whitespace-nowrap">{{form.id}}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{form.bike_brand or 'Brak danych'}}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{form.created_at}}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{form.visit_date}} </td>
+                <td class="px-6 py-4 whitespace-nowrap">{{form.user.full_name}}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <a href="/forms/{{form.id}}/chat"
                        class="inline-block px-4 py-2 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white rounded-md transition duration-300 ease-in-out">

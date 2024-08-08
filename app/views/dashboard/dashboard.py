@@ -37,14 +37,12 @@ def get_clients_handler(request: Request, db: Session = Depends(get_db)):
     if not current_user:
         return RedirectResponse("/user/login")
 
-    clients = get_clients(db)
-    users = get_users(db)
     return settings.TEMPLATES.TemplateResponse(
         "clients.html",
         {
-            "users": users,
+            "users": get_users(db),
             "request": request,
-            "clients": clients,
+            "clients": get_clients(db),
             "user": current_user
         }
     )
@@ -82,7 +80,7 @@ def get_client_handler(request: Request, client_id: int, db: Session = Depends(g
 
 
 @router.post("/clients", response_class=RedirectResponse)
-def create_client_handler(
+def create_visit_handler(
         request: Request,
         full_name: str = Form(None),
         email: str = Form(None),
@@ -221,6 +219,9 @@ async def chat_dashboard(request: Request, form_id: int, db: Session = Depends(g
     messages = get_messages_by_form_id(db, form_id)
 
     form_details = get_form_by_id(db, form_id)
+
+    if not form_details:
+        raise HTTPException(status_code=404, detail="Form not found")
 
     client_data = get_client_by_id(db, form_details.client_id)
 

@@ -14,4 +14,12 @@ def serialize_model(instance):
         if isinstance(value, datetime):
             instance_dict[key] = str(value)[:10]
 
+    if 'user' in instance_dict:
+        user = instance_dict['user']
+        instance_dict['user'] = {
+            'id': user.id,
+            'full_name': user.full_name,
+        }
+
     return instance_dict
+
