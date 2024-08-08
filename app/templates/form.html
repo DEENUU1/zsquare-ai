@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pl" class="min-h-screen bg-gray-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+
+
+        .form-input {
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            transform: scale(1.02);
+        }
+
+        .submit-btn {
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-btn {
+            transition: all 0.3s ease;
+        }
+
+        .section-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .nav-btn {
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        #responseMessage {
+            z-index: 9999;
+        }
+
+        .modal-content {
+            position: relative;
+            z-index: 10000;
+        }
+    </style>
+    <title>ZSquare | Formularz</title>
+</head>
+<body class="min-h-screen flex flex-col">
+{% include 'navbar.html' %}
+
+<div class="flex-grow flex flex-col items-center justify-start pt-12 px-4 overflow-auto">
+    <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-4xl mb-12 border border-green-200 transform hover:scale-[1.02] transition-all duration-300">
+
+        <div id="responseMessage"
+             class="fixed inset-0 bg-gray-300 bg-opacity-50 overflow-y-auto h-full w-full hidden fade-in flex items-center justify-center">
+            <div class="modal-content relative p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="messageTitle"></h3>
+                    <div class="mt-2 px-7 py-3">
+                        <p class="text-sm text-gray-500" id="messageContent"></p>
+                    </div>
+                    <div class="items-center px-4 py-3">
+                        <button id="closeMessage"
+                                class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 transition-all duration-300 hover:scale-105">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h1 class="font-bold text-5xl mb-10 text-center text-green-600 tracking-wide animate-pulse">Formularz</h1>
+
+        <form class="space-y-12" action="/submit-form" method="post" id="myForm">
+            <div class="mb-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                    <button type="button" id="prevBtn"
+                            class="nav-btn px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Poprzedni
+                    </button>
+                    <div class="flex flex-wrap justify-center items-center -m-1">
+                        <div class="m-1">
+                            <button type="button" class="section-btn px-3 py-1 bg-green-500 text-white rounded-full"
+                                    data-section="1">1
+                            </button>
+                        </div>
+                        <div class="m-1">
+                            <button type="button" class="section-btn px-3 py-1 bg-gray-300 text-gray-700 rounded-full"
+                                    data-section="2">2
+                            </button>
+                        </div>
+                        <div class="m-1">
+                            <button type="button" class="section-btn px-3 py-1 bg-gray-300 text-gray-700 rounded-full"
+                                    data-section="3">3
+                            </button>
+                        </div>
+                        <div class="m-1">
+                            <button type="button" class="section-btn px-3 py-1 bg-gray-300 text-gray-700 rounded-full"
+                                    data-section="4">4
+                            </button>
+                        </div>
+                        <div class="m-1">
+                            <button type="button" class="section-btn px-3 py-1 bg-gray-300 text-gray-700 rounded-full"
+                                    data-section="5">5
+                            </button>
+                        </div>
+                        <div class="m-1">
+                            <button type="button" class="section-btn px-3 py-1 bg-gray-300 text-gray-700 rounded-full"
+                                    data-section="6">6
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" id="nextBtn"
+                            class="nav-btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Następny
+                    </button>
+                </div>
+            </div>
+
+            <div id="section1" class="section p-8 bg-white rounded-xl shadow-lg border-t-4 border-green-500">
+                <h2 class="text-3xl font-semibold text-gray-800 mb-8 pb-2 border-b-2 border-green-200">Dane osobowe</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label for="full_name" class="block text-sm font-medium text-gray-700 mb-2">Imię i
+                            nazwisko*</label>
+                        <input required placeholder="Jan Kowalski" id="full_name" name="full_name" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div>
+                        <label for="birth_date" class="block text-sm font-medium text-gray-700 mb-2">Data
+                            urodzenia</label>
+                        <input id="birth_date" name="birth_date" type="date"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Miejsce
+                            zamieszkania</label>
+                        <input placeholder="Warszawa" id="location" name="location" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Telefon*</label>
+                        <input required placeholder="123-123-123" id="phone" name="phone"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Adres email*</label>
+                        <input required placeholder="jankowalski@gmail.com" id="email" name="email" type="email"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section2" class="section p-8 bg-white rounded-xl shadow-lg border-t-4 border-green-500">
+                <h2 class="text-3xl font-semibold text-gray-800 mb-8 pb-2 border-b-2 border-green-200">Sprzęt
+                    rowerowy</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label for="bike" class="block text-sm font-medium text-gray-700 mb-2">Marka roweru</label>
+                        <input placeholder="Marka" id="bike_brand" name="bike_brand" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div>
+                        <label for="shoes" class="block text-sm font-medium text-gray-700 mb-2">Model roweru</label>
+                        <input placeholder="Model" id="bike_model" name="bike_model" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div>
+                        <label for="inserts" class="block text-sm font-medium text-gray-700 mb-2">Rozmiar roweru</label>
+                        <input placeholder="Rozmiar" id="bike_size" name="bike_size" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div>
+                        <label for="pedals" class="block text-sm font-medium text-gray-700 mb-2">Rocznik</label>
+                        <input placeholder="Rocznik" id="bike_year" name="bike_year" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="other_bike" class="block text-sm font-medium text-gray-700 mb-2">Grupa
+                            napędowa</label>
+                        <input placeholder="Grupa napędowa" id="drive_group" name="drive_group" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section3" class="section p-8 bg-white rounded-xl shadow-lg border-t-4 border-green-500">
+                <h2 class="text-3xl font-semibold text-gray-800 mb-8 pb-2 border-b-2 border-green-200">Historia
+                    sportowa</h2>
+
+                <div class="space-y-6">
+                    <div>
+                        <label for="year_distance" class="block text-sm font-medium text-gray-700 mb-2">Roczny dystans
+                            (w kilometrach)</label>
+                        <input placeholder="Dystans" id="year_distance" name="year_distance" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div>
+                        <label for="weekly_frequency" class="block text-sm font-medium text-gray-700 mb-2">Ilość sesji
+                            tygodniowo</label>
+                        <input placeholder="Częstotliwość" id="weekly_frequency" name="weekly_frequency" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                    <div>
+                        <label for="avg_kilometers" class="block text-sm font-medium text-gray-700 mb-2">Średni czas na
+                            kilometr</label>
+                        <input placeholder="Czas na kilometr" id="avg_kilometers" name="avg_kilometers" type="text"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section4" class="section p-8 bg-white rounded-xl shadow-lg border-t-4 border-green-500">
+                <h2 class="text-3xl font-semibold text-gray-800 mb-8 pb-2 border-b-2 border-green-200">Styl jazdy</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    <div>
+                        <label for="ride_style" class="block text-sm font-medium text-gray-700 mb-2">Styl jazdy</label>
+                        <select id="ride_style" name="ride_style"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out">
+                            <option value="">Wybierz opcję</option>
+                            <option value="sport">Sportowy</option>
+                            <option value="recreation">Rekreacyjny</option>
+                        </select>
+                    </div>
+
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Czy bierzesz udział w imprezach
+                            sportowych / wyścigach?</label>
+                        <div class="mt-2 space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="event" value="yes"
+                                       class="form-radio text-green-500 focus:ring-2 focus:ring-green-500">
+                                <span class="ml-2">Tak</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="event" value="no"
+                                       class="form-radio text-green-500 focus:ring-2 focus:ring-green-500">
+                                <span class="ml-2">Nie</span>
+                            </label>
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <label for="other_activity" class="block text-sm font-medium text-gray-700 mb-2">Wypisz
+                            aktywności lub inne sporty które uprawiasz</label>
+                        <input type="text" id="other_activity" name="other_activity"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"/>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div id="section5" class="section p-8 bg-white rounded-xl shadow-lg border-t-4 border-green-500">
+                <h2 class="text-3xl font-semibold text-gray-800 mb-8 pb-2 border-b-2 border-green-200">Cel wizyty</h2>
+
+                <div class="space-y-6">
+                    <div>
+                        <label for="visit_goal" class="block text-sm font-medium text-gray-700 mb-2">Cel wizyty</label>
+                        <select id="visit_goal" name="visit_goal" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out">
+                            <option value="">Wybierz opcję</option>
+                            <option value="reduction">Redukcja dolegliwości</option>
+                            <option value="improvement">Poprawa efektywności</option>
+                            <option value="discussion">Omówienie zmian komponentów</option>
+                        </select>
+                    </div>
+
+                    <div id="visit_problems_container" class="hidden">
+                        <label for="visit_problems" class="block text-sm font-medium text-gray-700 mb-2">Opis
+                            problemów</label>
+                        <textarea id="visit_problems" name="visit_problems" rows="6"
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-150 ease-in-out resize-y"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section6" class="section p-8 bg-white rounded-xl shadow-lg border-t-4 border-green-500">
+                <h2 class="text-3xl font-semibold text-gray-800 mb-8 pb-2 border-b-2 border-green-200">Przebyte kontuzje
+                    / operacje / choroby
+                    towarzyszące</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label for="injuries" class="block text-sm font-medium text-gray-700 mb-2">Opis kontuzji,
+                            operacji lub chorób</label>
+                        <textarea id="injuries" name="injuries" rows="6"
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-150 ease-in-out resize-y"></textarea>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="text-right">
+                <button type="submit" id="submitBtn"
+                        class="submit-btn px-8 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:scale-105">
+                    Wyślij formularz
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<footer class="mt-8 text-center text-sm text-gray-500 p-4">
+    &copy; 2024 ZSquare. Wszelkie prawa zastrzeżone.
+</footer>
+<script>
+    gsap.from("h1", {duration: 1, y: -50, opacity: 0, ease: "power3.out"});
+    gsap.from(".section-btn", {duration: 0.5, scale: 0.5, opacity: 0, stagger: 0.1, ease: "back.out(1.7)"});
+    gsap.from(".nav-btn", {duration: 0.5, x: -20, opacity: 0, stagger: 0.2, ease: "power2.out"});
+
+    // Animate form inputs on focus
+    document.querySelectorAll('input, select, textarea').forEach(element => {
+        element.addEventListener('focus', () => {
+            gsap.to(element, {duration: 0.3, scale: 1.02, ease: "power2.out"});
+        });
+        element.addEventListener('blur', () => {
+            gsap.to(element, {duration: 0.3, scale: 1, ease: "power2.out"});
+        });
+    });
+
+
+    const visitGoalElement = document.getElementById('visit_goal');
+    const visitProblemsContainer = document.getElementById('visit_problems_container');
+
+    visitGoalElement.addEventListener('change', function () {
+        if (visitGoalElement.value === 'reduction') {
+            visitProblemsContainer.classList.remove('hidden');
+        } else {
+            visitProblemsContainer.classList.add('hidden');
+        }
+    });
+
+    function validateForm() {
+        const requiredFields = document.querySelectorAll('input[required], select[required], textarea[required]');
+        let isValid = true;
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('border-red-500');
+            } else {
+                field.classList.remove('border-red-500');
+            }
+        });
+        return isValid;
+    }
+
+    document.getElementById('myForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            showMessage('Błąd', 'Proszę wypełnić wszystkie wymagane pola przed wysłaniem formularza.');
+            return;
+        }
+
+        const formData = new FormData(this);
+
+        axios.post('/submit-form', formData)
+                .then(function (response) {
+                    if (response.data.error) {
+                        showMessage('Błąd', response.data.error);
+                    } else if (response.data.message) {
+                        window.location.href = '/thank-you';
+                    } else {
+                        showMessage('Informacja', 'Otrzymano nieoczekiwaną odpowiedź z serwera.');
+                    }
+                })
+                .catch(function (error) {
+                    if (error.response) {
+                        showMessage('Błąd', error.response.data.error || 'Wystąpił błąd podczas wysyłania formularza.');
+                    } else if (error.request) {
+                        showMessage('Błąd', 'Nie można połączyć się z serwerem. Sprawdź swoje połączenie internetowe.');
+                    } else {
+                        showMessage('Błąd', 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.');
+                    }
+                    console.error('Error details:', error);
+                });
+    });
+
+    function showMessage(title, message) {
+        document.getElementById('messageTitle').textContent = title;
+        document.getElementById('messageContent').textContent = message;
+        const modalElement = document.getElementById('responseMessage');
+        modalElement.classList.remove('hidden');
+        modalElement.classList.add('flex');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+    }
+
+    document.getElementById('closeMessage').addEventListener('click', function () {
+        const modalElement = document.getElementById('responseMessage');
+        modalElement.classList.add('hidden');
+        modalElement.classList.remove('flex');
+        document.body.style.overflow = ''; // Re-enable scrolling
+    });
+
+
+    let currentSection = 1;
+    const totalSections = 6;
+
+    function showSection(sectionNumber) {
+        if (sectionNumber > currentSection && !validateCurrentSection()) {
+            showMessage('Błąd', 'Proszę wypełnić wszystkie wymagane pola w tej sekcji przed przejściem dalej.');
+            return;
+        }
+
+        document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+        const newSection = document.getElementById(`section${sectionNumber}`);
+        newSection.classList.remove('hidden');
+
+        document.querySelectorAll('.section-btn').forEach(btn => {
+            btn.classList.remove('bg-green-500', 'text-white');
+            btn.classList.add('bg-gray-300', 'text-gray-700');
+        });
+        const activeBtn = document.querySelector(`.section-btn[data-section="${sectionNumber}"]`);
+        activeBtn.classList.add('bg-green-500', 'text-white');
+        activeBtn.classList.remove('bg-gray-300', 'text-gray-700');
+        gsap.fromTo(activeBtn, {scale: 1}, {duration: 0.3, scale: 1.1, yoyo: true, repeat: 1});
+
+        currentSection = sectionNumber;
+        updateButtons();
+    }
+
+
+    function updateButtons() {
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if (currentSection === 1) {
+            prevBtn.disabled = true;
+            prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            prevBtn.disabled = false;
+            prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        if (currentSection === totalSections) {
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        document.getElementById('submitBtn').style.display = currentSection === totalSections ? 'inline-block' : 'none';
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+        if (currentSection > 1) {
+            showSection(currentSection - 1);
+        }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        if (currentSection < totalSections) {
+            if (validateCurrentSection()) {
+                showSection(currentSection + 1);
+            } else {
+                showMessage('Błąd', 'Proszę wypełnić wszystkie wymagane pola w tej sekcji przed przejściem dalej.');
+            }
+        }
+    });
+
+    function validateCurrentSection() {
+        const currentSectionElement = document.getElementById(`section${currentSection}`);
+        const requiredFields = currentSectionElement.querySelectorAll('input[required], select[required], textarea[required]');
+        let isValid = true;
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('border-red-500');
+            } else {
+                field.classList.remove('border-red-500');
+            }
+        });
+        return isValid;
+    }
+
+    document.querySelectorAll('.section-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            showSection(parseInt(e.target.dataset.section));
+        });
+    });
+
+    showSection(1);
+</script>
+
+</body>
+</html>

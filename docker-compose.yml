@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+    web:
+        hostname: web
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: "zsquare_web"
+        command: uvicorn app:app --host 0.0.0.0 --port 8001
+        volumes:
+            - ./app:/app
+        ports:
+            - "8001:8001"
+        env_file:
+            - .env
+        restart: always
+        depends_on:
+            - db
+
+    db:
+        hostname: db
+        image: postgres:15
+        container_name: database
+        volumes:
+            - ./data/db:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+        env_file:
+            - .env
