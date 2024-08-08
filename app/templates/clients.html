@@ -21,7 +21,7 @@
 
     <div class="mb-4 flex justify-end">
         <button onclick="showCreateClientModal()" class="bg-green-300 hover:bg-green-400 font-bold py-2 px-4 rounded">
-            Dodaj nowego klienta
+            Dodaj wizytę
         </button>
     </div>
 
@@ -146,69 +146,83 @@
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-<form action="/clients" method="POST">
-    <div class="mb-4">
-        <label for="client_id" class="block text-gray-700 text-sm font-bold mb-2">Wybierz klienta:</label>
-        <select id="client_id" name="client_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            <option value="">Wybierz klienta</option>
-            {% for client in clients %}
-            <option value="{{ client.id }}">{{ client.full_name }} ({{ client.email }})</option>
-            {% endfor %}
-        </select>
-    </div>
+            <form action="/clients" method="POST">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="mb-4">
+                        <label for="client_select" class="block text-gray-700 text-sm font-bold mb-2">Wybierz klienta:</label>
+                        <select id="client_select" name="client_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="">Dodaj nowego klienta</option>
+                            {% for client in clients %}
+                                <option value="{{ client.id }}">{{ client.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-    <!-- Jeśli klient nie jest wybrany, wypełnij te pola -->
-    <div id="newClientFields" class="hidden">
-        <div class="mb-4">
-            <label for="full_name" class="block text-gray-700 text-sm font-bold mb-2">Imię i nazwisko:</label>
-            <input type="text" id="full_name" name="full_name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-        </div>
-        <div class="mb-4">
-            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
-            <input type="email" id="email" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-        </div>
-        <div class="mb-4">
-            <label for="phone" class="block text-gray-700 text-sm font-bold mb-2">Telefon:</label>
-            <input type="tel" id="phone" name="phone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-        </div>
-    </div>
+                    <div id="newClientFields">
+                        <div class="mb-4">
+                            <label for="full_name" class="block text-gray-700 text-sm font-bold mb-2">Imię i nazwisko:</label>
+                            <input type="text" id="full_name" name="full_name"
+                                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div class="mb-4">
+                            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                            <input type="email" id="email" name="email"
+                                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div class="mb-4">
+                            <label for="phone" class="block text-gray-700 text-sm font-bold mb-2">Telefon:</label>
+                            <input type="tel" id="phone" name="phone"
+                                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                    </div>
 
-    <div class="mb-4">
-        <label for="fitter" class="block text-gray-700 text-sm font-bold mb-2">Fitter:</label>
-        <input type="number" id="fitter" name="fitter" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-    </div>
+                    <div class="mb-4">
+                        <label for="fitter_select" class="block text-gray-700 text-sm font-bold mb-2">Wybierz fittera:</label>
+                        <select id="fitter_select" name="fitter" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-    <div class="mb-4">
-        <label for="visit_date" class="block text-gray-700 text-sm font-bold mb-2">Data wizyty:</label>
-        <input type="date" id="visit_date" name="visit_date" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-    </div>
-
-    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-        <button type="submit"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-lime-600 text-base font-medium text-black hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lime-500 sm:ml-3 sm:w-auto sm:text-sm">
-            Dodaj
-        </button>
-        <button type="button" onclick="hideCreateClientModal()"
-                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-            Anuluj
-        </button>
-    </div>
-</form>
+                    <div class="mb-4">
+                        <label for="visit_date" class="block text-gray-700 text-sm font-bold mb-2">Data wizyty:</label>
+                        <input type="datetime-local" id="visit_date" name="visit_date"
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-lime-600 text-base font-medium text-black hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lime-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Dodaj wizytę
+                    </button>
+                    <button type="button" onclick="hideCreateClientModal()"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Anuluj
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-    const clientSelect = document.getElementById('client_id');
-    const newClientFields = document.getElementById('newClientFields');
-
-    clientSelect.addEventListener('change', function () {
-        if (this.value) {
-            newClientFields.classList.add('hidden');
+document.getElementById('client_select').addEventListener('change', function () {
+        const newClientFields = document.getElementById('newClientFields');
+        if (this.value === '') {
+            newClientFields.style.display = 'block';
         } else {
-            newClientFields.classList.remove('hidden');
+            newClientFields.style.display = 'none';
         }
     });
+
+    // Initial state
+    if (document.getElementById('client_select').value === '') {
+        document.getElementById('newClientFields').style.display = 'block';
+    } else {
+        document.getElementById('newClientFields').style.display = 'none';
+    }
+
 
 
     function showCreateClientModal() {

@@ -3,6 +3,28 @@ from typing import Optional
 from datetime import datetime
 
 
+class FormInputSchema(BaseModel):
+    full_name: str
+    birth_date: str
+    location: str
+    phone: str
+    email: str
+    bike_brand: Optional[str] = None
+    bike_model: Optional[str] = None
+    bike_size: Optional[str] = None
+    bike_year: Optional[str] = None
+    drive_group: Optional[str] = None
+    year_distance: Optional[str] = None
+    weekly_frequency: Optional[str] = None
+    avg_kilometer: Optional[str] = None
+    ride_style: Optional[str] = None
+    event: Optional[str] = None
+    other_activity: Optional[str] = None
+    visit_goal: str
+    visit_problems: Optional[str] = None
+    injuries: Optional[str] = None
+
+
 class FormOutputSchema(BaseModel):
     id: int
     bike: Optional[str] = None

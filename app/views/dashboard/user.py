@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from config.database import get_db
-from services.auth import verify_password, get_user_by_email, create_access_token
+from models.user import User
+from services.auth import verify_password, get_user_by_email, create_access_token, get_password_hash
 from config.settings import settings
 
 router = APIRouter(
@@ -40,7 +41,7 @@ async def login(
             {"request": request, "error": "Nieprawidłowe dane logowania"}
         )
     access_token = create_access_token(data={"sub": user.email})
-    response = RedirectResponse(url="/clients", status_code=status.HTTP_302_FOUND)
+    response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
     response.set_cookie(key="access_token", value=access_token, httponly=True)
     return response
 
@@ -50,3 +51,31 @@ async def logout(request: Request):
     response = RedirectResponse(url="/user/login", status_code=303)
     response.delete_cookie(key="access_token")
     return response
+
+@router.get("/register", response_class=HTMLResponse)
+async def register_form(request: Request):
+    return settings.TEMPLATES.TemplateResponse("register.html", {"request": request})
+
+
+@router.post("/register")
+async def register(
+        request: Request,
+        full_name: str = Form(...),
+        email: str = Form(...),
+        password: str = Form(...),
+        db: Session = Depends(get_db)
+):
+    user = get_user_by_email(db, email)
+    if user:
+        return settings.TEMPLATES.TemplateResponse(
+            "register.html",
+            {"request": request, "error": "Użytkownik już istnieje"}
+        )
+
+    hashed_password = get_password_hash(password)
+    new_user = User(email=email, full_name=full_name, hashed_password=hashed_password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return RedirectResponse(url="/user/login", status_code=status.HTTP_302_FOUND)

@@ -38,9 +38,11 @@ def get_clients_handler(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse("/user/login")
 
     clients = get_clients(db)
+    users = get_users(db)
     return settings.TEMPLATES.TemplateResponse(
         "clients.html",
         {
+            "users": users,
             "request": request,
             "clients": clients,
             "user": current_user
@@ -82,9 +84,9 @@ def get_client_handler(request: Request, client_id: int, db: Session = Depends(g
 @router.post("/clients", response_class=RedirectResponse)
 def create_client_handler(
         request: Request,
-        full_name: str = Form(...),
-        email: str = Form(...),
-        phone: str = Form(...),
+        full_name: str = Form(None),
+        email: str = Form(None),
+        phone: str = Form(None),
         fitter: int = Form(...),
         visit_date: str = Form(...),
         client_id: int = Form(None),
@@ -94,7 +96,12 @@ def create_client_handler(
     if not current_user:
         return RedirectResponse("/user/login")
 
+    visit_date = datetime.strptime(visit_date, "%Y-%m-%dT%H:%M")
+
     if not client_id:
+        if not full_name or not email or not phone:
+            raise HTTPException(status_code=400, detail="Missing required fields for a new client")
+
         client = create_client(db, Client(
             full_name=full_name,
             email=email,
@@ -104,7 +111,7 @@ def create_client_handler(
 
     create_form_data(db, FormData(
         user_id=fitter,
-        visit_date=datetime.strptime(visit_date, "%Y-%m-%d"),
+        visit_date=visit_date,
     ), client_id)
 
     return RedirectResponse(url=f"/clients/{client_id}", status_code=303)
